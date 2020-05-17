@@ -100,9 +100,9 @@ def describe_dataset(dataset):
             description['max'].append(None)
     return description
 
-def main():
+def retrieve_dataset(filename):
     dataset = {}
-    with open('datasets/dataset_train.csv', 'r') as file:
+    with open(filename, 'r') as file:
         reader = csv.reader(file)
         dataset = dict.fromkeys(next(reader), 0)
         for row in reader:
@@ -110,134 +110,17 @@ def main():
                 if (dataset[list(dataset.keys())[i]] == 0):
                     dataset[list(dataset.keys())[i]] = []
                 dataset[list(dataset.keys())[i]].append(row[i])
+    return dataset
+
+def main():
+    try:
+        dataset = retrieve_dataset('datasets/dataset_train.csv')
+    except FileNotFoundError:
+        print("File not found, exiting program")
+        exit()
     description = describe_dataset(dataset)
     print_description(description)
-    exit()
 
 if __name__ == '__main__':
     main()
-
-print('\t\t', end='')
-for key in dataset.keys():
-    #try:
-    #    calculate_mean(dataset[key])
-    #except ValueError as e:
-    #    pass
-    #else:
-    print(key, end='\t\t')
-print('')
-
-''' count '''
-print('Count', end='\t\t')
-for key in dataset.keys():
-    #try:
-    #    calculate_mean(dataset[key])
-    #except ValueError:
-    #    # pass
-    #else:
-    print(len(dataset[key]), end='\t\t')
-print('')
-
-''' mean '''
-print('Mean', end='\t\t')
-for key in dataset.keys():
-    try:
-        mean = calculate_mean(dataset[key])
-    except ValueError:
-        #pass
-        print(None, end='\t\t')
-    else:
-        print("%.2f" % (mean), end='\t\t')
-print('')
-
-''' std '''
-print('Std', end='\t\t')
-for key in dataset.keys():
-    try:
-        mean = calculate_mean(dataset[key])
-        total = 0.0
-        for element in dataset[key]:
-            if element == '':
-                element = 0.0
-            total += abs(float(element) - mean)**2
-        std = math.sqrt(total / len(dataset[key]))
-    except ValueError:
-        #pass
-        print(None, end='\t\t')
-    else:
-        print("%.2f" % (std), end='\t\t')
-print('')
-
-''' min '''
-print('Min', end='\t\t')
-for key in dataset.keys():
-    try:
-        min_value = None
-        for element in dataset[key]:
-            if element == '':
-                element = 0.0
-            if (min_value is None) or (float(element) < min_value):
-                min_value = float(element)
-    except ValueError:
-       # pass
-        print(None, end='\t\t')
-    else:
-        print("%.2f" % (min_value), end='\t\t')
-print('')
-
-''' max '''
-print('Max', end='\t\t')
-for key in dataset.keys():
-    try:
-        max_value = None
-        for element in dataset[key]:
-            if element == '':
-                element = 0.0
-            if (max_value is None) or (float(element) > max_value):
-                max_value = float(element)
-    except ValueError:
-        #pass
-        print(None, end='\t\t')
-    else:
-        print("%.2f" % (max_value), end='\t\t')
-print('')
-
-
-''' quartile_25 '''
-print('25%', end='\t\t')
-for key in dataset.keys():
-    try:
-        data = sorted(list(map(float, dataset[key])))
-        quartile_25 = calculate_quantile(data, 25) 
-        numpy_25 = np.quantile(data, 0.25)
-    except ValueError:
-        print(None, end='\t\t')
-    else:
-        print("%.2f" % (quartile_25), end='\t\t')
-        print("NUMPY: %.2f" % (numpy_25), end='\t\t')
-print('')
-
-''' quartile_50 '''
-print('50%', end='\t\t')
-for key in dataset.keys():
-    try:
-        data = sorted(list(map(float, dataset[key])))
-        quartile_50 = calculate_quantile(data, 50) 
-    except ValueError:
-        print(None, end='\t\t')
-    else:
-        print("%.2f" % (quartile_50), end='\t\t')
-print('')
-
-''' quartile 75 '''
-print('75%', end='\t\t')
-for key in dataset.keys():
-    try:
-        data = sorted(list(map(float, dataset[key])))
-        quartile_75 = calculate_quantile(data, 75) 
-    except ValueError:
-        print(None, end='\t\t')
-    else:
-        print("%.2f" % (quartile_75), end='\t\t')
-print('')
 

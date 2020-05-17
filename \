@@ -1,0 +1,20 @@
+import describe
+
+def calculate_variance(dataset):
+    for key in dataset.keys():
+        #trimmed_data = trim_dataset(dataset[key])
+        trimmed_data = dataset[key]
+        try:
+            float_data = list(map(try_float, trimmed_data))
+
+def main():
+    try:
+        dataset = describe.retrieve_dataset('datasets/dataset_train.csv')
+    except FileNotFoundError:
+        print("File not found, exiting program")
+        exit()
+
+
+
+if __name__ == "__main__":
+    main()
