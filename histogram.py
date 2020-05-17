@@ -1,5 +1,6 @@
 import math
 import plotly.graph_objects as go
+import matplotlib.pyplot as plt
 import describe
 
 classes = ['Arithmancy', 'Astronomy', 'Herbology', 'Defense Against the Dark Arts', 'Divination', 'Muggle Studies', 'Ancient Runes', 'History of Magic', 'Transfiguration', 'Potions', 'Care of Magical Creatures', 'Charms', 'Flying']
@@ -92,10 +93,6 @@ def variance_per_course_per_house(dataset):
         results_bis[course] = calculate_variance(variances)
         variances_all.append(results_bis[course])
     
-    sorted_results_bis = {}
-    for key in sorted(results_bis, key=results_bis.__getitem__):
-        sorted_results_bis[key] = results_bis[key]
-
     print("Variance between students grades, per house per course")
     for key, value in results.items():
         print(key, value)
@@ -105,9 +102,13 @@ def variance_per_course_per_house(dataset):
     for key, value in results_bis.items():
         print(key, value)
 
+    grades_arrays = []
+    for grade in results_bis.values():
+        grades_arrays.append([grade])
+    plt.hist(grades_arrays, len(grades_arrays), density=True, histtype='bar', label=classes)
+    plt.legend(prop={'size':10})
+    plt.show()
 
-#    fig = go.Figure(data=[go.Histogram(y=variances_all)])
- #   fig.show()
 
 
 def main():
