@@ -30,10 +30,20 @@ def prepare_dataset(dataset):
                     results[house][key].append(grade)
 '''
 
+def get_min(values):
+    return sorted(values)[0]
+
+def get_max(values):
+    return sorted(values)[len(values) - 1]
+
+def normalize(value, min_value, max_value):
+    return (value - min_value) / (max_value - min_value)
+
 def prepare_dataset(dataset):
     # The results data will have this format:
     # {'Class1': {'House1': [grades], 'House2': [grades]}}
     results = {}
+    grade_min, grade_max = {}, {}
     for course in classes:
         if course not in results.keys():
             results[course] = {}
@@ -44,16 +54,18 @@ def prepare_dataset(dataset):
                 house = dataset['Hogwarts House'][i]
                 grade = describe.try_float(dataset[course][i])
                 results[course][house].append(grade)
+                if course not in grade_min.keys() or grade < grade_min[course]:
+                    grade_min[course] = grade
+                if course not in grade_max.keys() or grade > grade_max[course]:
+                    grade_max[course] = grade
             except KeyError:
                     results[course][house] = []
                     results[course][house].append(grade)
+    for course, houses in results.items():
+        for house, grades in houses.items():
+            for i in range(len(grades)):
+                results[course][house][i] = normalize(results[course][house][i], grade_min[course], grade_max[course])
     return results
-
-def get_min(values):
-    return sorted(values)[0]
-
-def get_max(values):
-    return sorted(values)[len(values) - 1]
 
 def calculate_variance(grades):
     squared_grades_total, squared_grades_mean = 0, 0
@@ -66,9 +78,6 @@ def calculate_variance(grades):
     squared_grades_mean = squared_grades_total / len(grades)
     grades_mean = grades_total / len(grades)
     return squared_grades_mean - (grades_mean ** 2)
-
-def normalize(value, min_value, max_value):
-    return (value - min_value) / (max_value - min_value)
 
 def variance_per_course_per_house(dataset):
     # The results data will have this format:
@@ -119,7 +128,8 @@ def main():
         print("File not found, exiting program")
         exit()
     result = prepare_dataset(dataset)
-    variance_per_course_per_house(result)
+    # The results are now normalized
+    #variance_per_course_per_house(result)
 
 if __name__ == "__main__":
     main()
