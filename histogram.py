@@ -2,19 +2,7 @@ import math
 import plotly.graph_objects as go
 import matplotlib.pyplot as plt
 import describe
-
-classes = ['Arithmancy', 'Astronomy', 'Herbology', 'Defense Against the Dark Arts', 'Divination', 'Muggle Studies', 'Ancient Runes', 'History of Magic', 'Transfiguration', 'Potions', 'Care of Magical Creatures', 'Charms', 'Flying']
-houses = ['Gryffindor', 'Slytherin', 'Hufflepuff', 'Ravenclaw']
-houses_colors = {'Gryffindor': '#7F0909', 'Slytherin': '#0D6217', 'Hufflepuff': '#EEE117', 'Ravenclaw': '#000A90'}
-
-def get_min(values):
-    return sorted(values)[0]
-
-def get_max(values):
-    return sorted(values)[len(values) - 1]
-
-def normalize(value, min_value, max_value):
-    return (value - min_value) / (max_value - min_value)
+from utils import *
 
 def prepare_dataset(dataset):
     # The results data will have this format:
@@ -29,6 +17,8 @@ def prepare_dataset(dataset):
         for course in classes:
             try:
                 house = dataset['Hogwarts House'][i]
+                if house == '':
+                    continue
                 grade = describe.try_float(dataset[course][i])
                 results[course][house].append(grade)
                 if course not in grade_min.keys() or grade < grade_min[course]:
@@ -71,7 +61,6 @@ def variance_per_course_per_house(dataset):
 def plot_histogram(results_variance):
     fig = go.Figure()
     variance_per_house = {}
-    grades_per_house = {}
     for course in results_variance.keys():
         for house in results_variance[course]:
             if house not in variance_per_house.keys():
@@ -85,7 +74,7 @@ def plot_histogram(results_variance):
 def main():
     results = {}
     try:
-        dataset = describe.retrieve_dataset('datasets/dataset_train.csv')
+        dataset = describe.retrieve_dataset('datasets/dataset_train.csv', fill_empty_nums=True)
     except FileNotFoundError:
         print("File not found, exiting program")
         exit()

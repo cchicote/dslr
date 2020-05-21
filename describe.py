@@ -1,20 +1,7 @@
 import csv
 import numpy as np
 import math
-
-def calculate_mean(data):
-    total = 0.0
-    for element in data:
-        if element == '':
-            element = 0.0
-        total += float(element)
-    return total / len(data)
-
-def try_float(value):
-    if (value == ''):
-        return 0.0
-    else:
-        return float(value)
+from utils import *
 
 def calculate_std(dataset, mean):
     total = 0.0
@@ -100,7 +87,9 @@ def describe_dataset(dataset):
             description['max'].append(None)
     return description
 
-def retrieve_dataset(filename):
+def retrieve_dataset(filename, fill_empty_nums=False):
+    # Dataset is in the format:
+    # 
     dataset = {}
     with open(filename, 'r') as file:
         reader = csv.reader(file)
@@ -110,11 +99,16 @@ def retrieve_dataset(filename):
                 if (dataset[list(dataset.keys())[i]] == 0):
                     dataset[list(dataset.keys())[i]] = []
                 dataset[list(dataset.keys())[i]].append(row[i])
+    if fill_empty_nums is True:
+        for key, value in dataset.items():
+            if key in classes:
+                median = calculate_quantile(trim_dataset(value), 50)
+                dataset[key] = [ median if x=='' else x for x in dataset[key] ]
     return dataset
 
 def main():
     try:
-        dataset = retrieve_dataset('datasets/dataset_train.csv')
+        dataset = retrieve_dataset('datasets/dataset_train.csv', fill_empty_nums=True)
     except FileNotFoundError:
         print("File not found, exiting program")
         exit()
