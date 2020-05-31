@@ -20,14 +20,14 @@ def prepare_dataset(dataset):
                 if house == '':
                     continue
                 grade = describe.try_float(dataset[course][i])
-                results[course][house].append(grade)
                 if course not in grade_min.keys() or grade < grade_min[course]:
                     grade_min[course] = grade
                 if course not in grade_max.keys() or grade > grade_max[course]:
                     grade_max[course] = grade
+                results[course][house].append(grade)
             except KeyError:
-                    results[course][house] = []
-                    results[course][house].append(grade)
+                results[course][house] = []
+                results[course][house].append(grade)
     # Here we normalize our grades
     for course, houses in results.items():
         for house, grades in houses.items():
