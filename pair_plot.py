@@ -1,8 +1,11 @@
 import math
 import plotly.graph_objects as go
+import plotly.figure_factory as ff
 import matplotlib.pyplot as plt
 import describe
 import pandas as pd
+import seaborn as sns
+import numpy as np
 from utils import *
 
 def prepare_dataset(dataset):
@@ -36,7 +39,7 @@ def prepare_dataset(dataset):
                 results[course][house][i] = normalize(results[course][house][i], grade_min[course], grade_max[course])
     return results
 
-def plot_scatter(results):
+def plot_scatter_plotly(results):
     fig = go.Figure()
     for house in houses:
         grades = []
@@ -45,15 +48,22 @@ def plot_scatter(results):
         fig.add_trace(go.Splom(dimensions=grades, text=list(results.keys()), name=house, opacity=0.8, marker_color=houses_colors[house]))
     fig.show()
 
+def plot_scatter_seaborn(filename):
+    df = pd.read_csv(filename)
+    graph = sns.pairplot(df, hue="Hogwarts House", vars=classes, plot_kws={'alpha':0.2}, diag_kind='hist', diag_kws={'alpha':0.6}, palette=houses_colors)
+    plt.show()
+
 def main():
+    filename = 'datasets/dataset_train.csv'
     results = {}
     try:
-        dataset = describe.retrieve_dataset('datasets/dataset_train.csv', fill_empty_nums=True)
+        dataset = describe.retrieve_dataset(filename, fill_empty_nums=True)
     except FileNotFoundError:
         print("File not found, exiting program")
         exit()
     results = prepare_dataset(dataset)
-    plot_scatter(results)
+    plot_scatter_plotly(results)
+    plot_scatter_seaborn(filename)
 
 if __name__ == "__main__":
     main()
