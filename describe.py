@@ -1,120 +1,140 @@
-import csv
 import numpy as np
 import math
-from utils import *
+from tabulate import tabulate
+import parse
 
-def calculate_std(dataset, mean):
+houses_colors = {'Gryffindor': '#7F0909', 'Slytherin': '#0D6217', 'Hufflepuff': '#EEE117', 'Ravenclaw': '#000A90'}
+
+def warn_diff(feature, val_type, standard_val, local_val):
+    print("DIFF FOR: [%s] [%s] [%f] [%f]" % (feature, val_type, standard_val, local_val))
+    
+def my_min(values):
+    m = values[0]
+    for value in values:
+        if not np.isnan(value):
+            if value < m:
+                m = value
+    return m
+
+def my_max(values):
+    m = values[0]
+    for value in values:
+        if not np.isnan(value):
+            if value > m:
+                m = value
+    return m
+
+def my_count(values):
+    count = 0.0
+    for value in values:
+        if not np.isnan(value):
+            count += 1
+    return count
+
+def my_sum(values):
+    s = 0
+    for value in values:
+        if not np.isnan(value):
+            s += value
+    return s
+
+def my_mean(values, count=None):
+    if count is None:
+        count = my_count(values)
+    if count > 0:
+        return (my_sum(values) / count)
+    else:
+        print("Error in my_mean: counted [%f] elements in values" % (count))
+        return None
+    
+
+def my_std(values, mean, ddof=1, count=None):
+    # We set count default value as None so that if feature has already been counted, we can just pass it as a parameter instead of calculating again in the 
+    # function, but the function still keeps the ability to count the feature
     total = 0.0
-    for element in dataset:
-        total += abs(element - mean)**2
-    std = math.sqrt(total / len(dataset))
-    return std
-
-def calculate_quantile(dataset, quantile):
-    #me = dataset[int((len(dataset) * quantile/100))]
-    #numpy = np.percentile(dataset, quantile, interpolation='higher')
-    #numpy = np.quantile(dataset, quantile/100, interpolation='higher')
-    #if me != numpy:
-    #    print("ERROR")
-    #    print(len(dataset))
-    #    print("Percentile: %d" % (quantile))
-    #    print("My result: [%f]" % (me))
-    #    print("Numpy's result: [%f]" % (numpy))
-    #    print("")
-    return dataset[int(len(dataset) * quantile/100)]
-
-def get_max_len(description):
-    max_len = 0
-    for key, values in description.items():
-        if len(key) > max_len:
-            max_len = len(key)
+    if count is None:
+        count = my_count(values)
+    if count > 0:
         for value in values:
-            if len(str(value)) > max_len:
-                max_len = len(str(value))
-    return max_len
+            if not np.isnan(value):
+                total += abs(value - mean)**2
+        std = np.sqrt(total / (count - ddof))
+        return std
+    else:
+        print("Error in my_std: counted [%f] elements in values" % (count))
+        return None
 
-def trim_dataset(values):
-    # list.remove() raises a ValueError exception when there is no searched element in the list
-    return_values = values.copy()
-    try:
-        while True:
-            return_values.remove('')
-    except ValueError:
-        return return_values
+def my_quantile(values, quantile, count=None):
+    # Pure-Python implementation of percentile function: https://stackoverflow.com/a/2753343
+    duplicate = values.copy()
+    duplicate.sort_values(inplace=True)
+    if count is None:
+        count = my_count(values)
+    if count > 0:
+        k = (count -1) * quantile
+        f = math.floor(k)
+        c = math.ceil(k)
+        if f == c:
+            return (duplicate.iloc[int(k)])
+        d0 = duplicate.iloc[int(f)] * (c-k)
+        d1 = duplicate.iloc[int(c)] * (k-f)
+        return d0+d1
+    else:
+        print("Error in my_quantile: counted [%f] elements in values" % (count))
+        
+def format_output(describe):
+    # Returning a dict with the same structure as the pandas describe function
+    out = {}
+    out[""] = []
+    for val_type in describe[next(iter(describe))]:
+        out[""].append(val_type)
+    for feature in describe.keys():
+        out[feature] = []
+        for val_type in out[""]:
+            out[feature].append(describe[feature][val_type])
+    return out
 
-def print_description(description):
-    max_len = get_max_len(description) + 2
-    for key, values in description.items():
-        printable = [key] + list(map(str, values))
-        print("".join(word.ljust(max_len) for word in printable))
+def my_describe(df, df_orig, print_describe=True):
+    # "Delta Degrees of Freedom" - Not exactly sure of what it does with such dataframes
+    ddof = 1
 
-def describe_dataset(dataset):
-    description = {}
-    description['keys'] = []
-    description['count'] = []
-    description['mean'] = []
-    description['std'] = []
-    description['min'] = []
-    description['25'] = []
-    description['50'] = []
-    description['75'] = []
-    description['max'] = []
+    # Values calculated with our functions go to describe dict
+    describe = {}
+    # Values calculated with system/numpy functions go to control_values dict
+    # It will allow us to check if our functions return correct values
+    control_values = df_orig.describe()
+    
+    for feature in df:
+        describe[feature] = {}
+        describe[feature]["count"] = my_count(df[feature])
+        describe[feature]["mean"] = my_mean(df[feature], count=describe[feature]["count"])
+        describe[feature]["std"] = my_std(df[feature], describe[feature]["mean"], ddof=ddof, count=describe[feature]["count"])
+        describe[feature]["min"] = my_min(df[feature])
+        describe[feature]["25%"] = my_quantile(df[feature], .25, count=describe[feature]["count"])
+        describe[feature]["50%"] = my_quantile(df[feature], .5, count=describe[feature]["count"])
+        describe[feature]["75%"] = my_quantile(df[feature], .75, count=describe[feature]["count"])
+        describe[feature]["max"] = my_max(df[feature])
 
-    for key in dataset.keys():
-        #trimmed_data = trim_dataset(dataset[key])
-        trimmed_data = dataset[key]
-        description['keys'].append(key)
-        description['count'].append(len(trimmed_data))
-        try:
-            float_data = list(map(try_float, trimmed_data))
-            sorted_float_data = sorted(float_data)
-            mean = calculate_mean(float_data)
-            description['mean'].append(mean)
-            description['std'].append(calculate_std(float_data, mean))
-            description['min'].append(sorted_float_data[0])
-            description['25'].append(calculate_quantile(sorted_float_data, 25))
-            description['50'].append(calculate_quantile(sorted_float_data, 50))
-            description['75'].append(calculate_quantile(sorted_float_data, 75))
-            description['max'].append(sorted_float_data[len(sorted_float_data) - 1])
-        except ValueError:
-            # A ValueError exception means that the feature is not made of numbers so we can't calculate all of these values
-            description['mean'].append(None)
-            description['std'].append(None)
-            description['min'].append(None)
-            description['25'].append(None)
-            description['50'].append(None)
-            description['75'].append(None)
-            description['max'].append(None)
-    return description
+        # For each significative difference between results from our functions and results from system/numpy functions, we output a warning
+        for value in control_values[feature].keys():
+            if not np.isclose(describe[feature][value], control_values[feature][value]):
+                warn_diff(feature, value, describe[feature][value], control_values[feature][value])
 
-def retrieve_dataset(filename, fill_empty_nums=False):
-    # Dataset is in the format:
-    # 
-    dataset = {}
-    with open(filename, 'r') as file:
-        reader = csv.reader(file)
-        dataset = dict.fromkeys(next(reader), 0)
-        for row in reader:
-            for i in range (len(dataset.keys())):
-                if (dataset[list(dataset.keys())[i]] == 0):
-                    dataset[list(dataset.keys())[i]] = []
-                dataset[list(dataset.keys())[i]].append(row[i])
-    if fill_empty_nums is True:
-        for key, value in dataset.items():
-            if key in classes:
-                median = calculate_quantile(trim_dataset(value), 50)
-                dataset[key] = [ median if x=='' else x for x in dataset[key] ]
-    return dataset
+    if print_describe is True:
+        print(tabulate(format_output(describe), headers="keys", tablefmt="fancy_grid", floatfmt=".6f"))
+        print(tabulate(df_orig.describe(), headers="keys", tablefmt="fancy_grid", floatfmt=".6f"))
+
+    return describe
 
 def main():
-    try:
-        dataset = retrieve_dataset('datasets/dataset_train.csv', fill_empty_nums=True)
-    except FileNotFoundError:
-        print("File not found, exiting program")
-        exit()
-    description = describe_dataset(dataset)
-    print_description(description)
+    # Read CSV file with pandas
+    df_orig = parse.read_file("datasets/dataset_train.csv")
 
-if __name__ == '__main__':
+    # Trim the dataframe to avoid nans and keep only the numeric values that will be used in calculations
+    df = parse.trim_dataframe(df_orig.copy())
+
+    # Describe
+    desc = my_describe(df, df_orig)
+
+if __name__ == "__main__":
     main()
-
