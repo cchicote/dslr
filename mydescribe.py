@@ -2,9 +2,13 @@
 import sys
 import math
 import pandas as pd
+from tabulate import tabulate
 
 classes = ['Arithmancy', 'Astronomy', 'Herbology', 'Defense Against the Dark Arts', 'Divination', 'Muggle Studies', 
 	'Ancient Runes', 'History of Magic', 'Transfiguration', 'Potions', 'Care of Magical Creatures', 'Charms', 'Flying']
+
+classesHeaders = ['Arithmancy', 'Astronomy', 'Herbology', 'Defense\nAgainst the\nDark Arts', 'Divination', 'Muggle Studies', 
+	'Ancient Runes', 'History\nof Magic', 'Transfiguration', 'Potions', 'Care of \nMagical\nCreatures', 'Charms', 'Flying']
 
 def	parsing(av, ac):
 	if ac != 2:
@@ -87,9 +91,9 @@ def	describe():
 
 	get_data(description, csv)
 
-	print(description)
+	print(tabulate(description, classesHeaders, tablefmt="fancy_grid", numalign=("right")))
 	print("============================")
-	print(csv.describe().loc[:,'Arithmancy':])
+	print(tabulate(csv.describe().loc[:,'Arithmancy':], classesHeaders, tablefmt="fancy_grid", numalign=("right")))
 
 if __name__ == "__main__":
 	describe()
