@@ -91,8 +91,9 @@ def	describe():
 
 	get_data(description, csv)
 
+	print("My describe:")
 	print(tabulate(description, classesHeaders, tablefmt="fancy_grid", numalign=("right")))
-	print("============================")
+	print("\nDescribe from pd.describe():")
 	print(tabulate(csv.describe().loc[:,'Arithmancy':], classesHeaders, tablefmt="fancy_grid", numalign=("right")))
 
 if __name__ == "__main__":
