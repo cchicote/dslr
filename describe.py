@@ -5,9 +5,6 @@ import parse
 
 houses_colors = {'Gryffindor': '#7F0909', 'Slytherin': '#0D6217', 'Hufflepuff': '#EEE117', 'Ravenclaw': '#000A90'}
 
-def warn_diff(feature, val_type, standard_val, local_val):
-    print("DIFF FOR: [%s] [%s] [%f] [%f]" % (feature, val_type, standard_val, local_val))
-    
 def my_min(values):
     m = values[0]
     for value in values:
@@ -94,17 +91,17 @@ def format_output(describe):
             out[feature].append(describe[feature][val_type])
     return out
 
-def my_describe(df, df_orig, print_describe=True):
+def my_describe(df, print_describe=True):
     # "Delta Degrees of Freedom" - Not exactly sure of what it does with such dataframes
     ddof = 1
 
     # Values calculated with our functions go to describe dict
     describe = {}
-    # Values calculated with system/numpy functions go to control_values dict
-    # It will allow us to check if our functions return correct values
-    control_values = df_orig.describe()
     
     for feature in df:
+        # Skip the features that do not contain exclusively numeric values
+        if df[feature].dtype not in parse.numeric_values:
+            continue
         describe[feature] = {}
         describe[feature]["count"] = my_count(df[feature])
         describe[feature]["mean"] = my_mean(df[feature], count=describe[feature]["count"])
@@ -115,14 +112,8 @@ def my_describe(df, df_orig, print_describe=True):
         describe[feature]["75%"] = my_quantile(df[feature], .75, count=describe[feature]["count"])
         describe[feature]["max"] = my_max(df[feature])
 
-        # For each significative difference between results from our functions and results from system/numpy functions, we output a warning
-        for value in control_values[feature].keys():
-            if not np.isclose(describe[feature][value], control_values[feature][value]):
-                warn_diff(feature, value, describe[feature][value], control_values[feature][value])
-
     if print_describe is True:
         print(tabulate(format_output(describe), headers="keys", tablefmt="fancy_grid", floatfmt=".6f"))
-        print(tabulate(df_orig.describe(), headers="keys", tablefmt="fancy_grid", floatfmt=".6f"))
 
     return describe
 
@@ -130,11 +121,8 @@ def main():
     # Read CSV file with pandas
     df_orig = parse.read_file("datasets/dataset_train.csv")
 
-    # Trim the dataframe to avoid nans and keep only the numeric values that will be used in calculations
-    df = parse.trim_dataframe(df_orig.copy())
-
     # Describe
-    desc = my_describe(df, df_orig)
+    desc = my_describe(df_orig)
 
 if __name__ == "__main__":
     main()

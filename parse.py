@@ -2,14 +2,17 @@ import pandas as pd
 import describe
 import math
 
+numeric_values = ["float64", "int64"]
+
 def normalize_df(df):
-    return df.apply(lambda x: (x - describe.my_min(x)) / (describe.my_max(x) - describe.my_min(x)) if (describe.my_min(x) != describe.my_max(x)) else 0)
-
-def trim_dataframe(df):
-    # Retrieve only columns with numeric values
-    df = df._get_numeric_data()
-
+    for column in df.columns:
+        if df[column].dtype not in numeric_values:
+            continue
+        df[column] = (df[column] - describe.my_min(df[column])) / (describe.my_max(df[column]) - describe.my_min(df[column]))
     return df
+
+#def normalize_df(df):
+#    return df.apply(lambda x: (x - describe.my_min(x)) / (describe.my_max(x) - describe.my_min(x)) if (describe.my_min(x) != describe.my_max(x)) else 0)
 
 def read_file(filename):
     try:
