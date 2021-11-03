@@ -5,6 +5,8 @@ import describe
 def my_histogram(df):
     fig = go.Figure()
     for feature in df:
+        if feature == "Index":
+            continue
         count = describe.my_count(df[feature])
         std = describe.my_std(df[feature], describe.my_mean(df[feature], count=count), ddof=1, count=count)
         fig.add_trace(go.Histogram(histfunc="avg", x=[feature], y=[std], name=feature, opacity=0.8))
