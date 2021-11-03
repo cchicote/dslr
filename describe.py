@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-#!env/bin/python3
-import csv
-=======
->>>>>>> 0efbfbe6ceb1cf2d752183e9533dd67e0802c3a9
 import numpy as np
 import math
 from tabulate import tabulate
@@ -143,3 +138,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
