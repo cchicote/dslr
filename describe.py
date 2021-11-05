@@ -1,129 +1,107 @@
-import numpy as np
+#!env/bin/python3
+import sys
 import math
+import pandas as pd
 from tabulate import tabulate
-import parse
+import constants as cst
 
-houses_colors = {'Gryffindor': '#7F0909', 'Slytherin': '#0D6217', 'Hufflepuff': '#EEE117', 'Ravenclaw': '#000A90'}
+def	parsing(av, ac):
+	if ac != 2:
+		print("usage: ./describe.py [dataset]")
+		exit()
+	return av[1]
 
-def my_min(values):
-    m = values[0]
-    for value in values:
-        if not np.isnan(value):
-            if value < m:
-                m = value
-    return m
+def	get_csv(path):
+	try:
+		csv = pd.read_csv(path, sep=",")
+	except:
+		print ("data.csv file missing")
+		sys.exit()
+	return csv
 
-def my_max(values):
-    m = values[0]
-    for value in values:
-        if not np.isnan(value):
-            if value > m:
-                m = value
-    return m
+def	get_count(values):
+	count = 0.0
+	for elem in values:
+		if math.isnan(elem):
+			continue
+		count += 1
+	return count
 
-def my_count(values):
-    count = 0.0
-    for value in values:
-        if not np.isnan(value):
-            count += 1
-    return count
+def	get_mean(count, values):
+	mean = 0.0
+	for elem in values:
+		if math.isnan(elem):
+			continue
+		mean += elem
+	mean /= count
+	return mean
 
-def my_sum(values):
-    s = 0
-    for value in values:
-        if not np.isnan(value):
-            s += value
-    return s
+def	get_std(count, mean, values):
+	summ = 0.0
+	for elem in values:
+		if math.isnan(elem):
+			continue
+		summ += abs(elem - mean) ** 2
+	std = math.sqrt(summ / (count - 1))
+	return std
 
-def my_mean(values, count=None):
-    if count is None:
-        count = my_count(values)
-    if count > 0:
-        return (my_sum(values) / count)
-    else:
-        print("Error in my_mean: counted [%f] elements in values" % (count))
-        return None
-    
+def	get_var(count, mean, values):
+	var = 0.0
+	for elem in values:
+		if math.isnan(elem):
+			continue
+		var += (elem - mean) ** 2
+	var = math.sqrt(var / count)
+	return var
 
-def my_std(values, mean, ddof=1, count=None):
-    # We set count default value as None so that if feature has already been counted, we can just pass it as a parameter instead of calculating again in the 
-    # function, but the function still keeps the ability to count the feature
-    total = 0.0
-    if count is None:
-        count = my_count(values)
-    if count > 0:
-        for value in values:
-            if not np.isnan(value):
-                total += abs(value - mean)**2
-        std = np.sqrt(total / (count - ddof))
-        return std
-    else:
-        print("Error in my_std: counted [%f] elements in values" % (count))
-        return None
+def	get_percent(data, percent, count):
+	if count > 0:
+		k = (count -1) * percent
+		f = math.floor(k)
+		c = math.ceil(k)
+		if f == c:
+			return (data.iloc[int(k)])
+		d0 = data.iloc[int(f)] * (c-k)
+		d1 = data.iloc[int(c)] * (k-f)
+		return d0+d1
+	else:
+		print("Error in my_quantile: counted [%f] elements in values" % (count))
 
-def my_quantile(values, quantile, count=None):
-    # Pure-Python implementation of percentile function: https://stackoverflow.com/a/2753343
-    duplicate = values.copy()
-    duplicate.sort_values(inplace=True)
-    if count is None:
-        count = my_count(values)
-    if count > 0:
-        k = (count -1) * quantile
-        f = math.floor(k)
-        c = math.ceil(k)
-        if f == c:
-            return (duplicate.iloc[int(k)])
-        d0 = duplicate.iloc[int(f)] * (c-k)
-        d1 = duplicate.iloc[int(c)] * (k-f)
-        return d0+d1
-    else:
-        print("Error in my_quantile: counted [%f] elements in values" % (count))
-        
-def format_output(describe):
-    # Returning a dict with the same structure as the pandas describe function
-    out = {}
-    out[""] = []
-    for val_type in describe[next(iter(describe))]:
-        out[""].append(val_type)
-    for feature in describe.keys():
-        out[feature] = []
-        for val_type in out[""]:
-            out[feature].append(describe[feature][val_type])
-    return out
+def	get_data(description, csv):
+	for classe in csv:
+		if classe not in cst.classes:
+			continue
 
-def my_describe(df, print_describe=True):
-    # "Delta Degrees of Freedom" - Not exactly sure of what it does with such dataframes
-    ddof = 1
+		values = csv.loc[:, classe]
 
-    # Values calculated with our functions go to describe dict
-    describe = {}
-    
-    for feature in df:
-        # Skip the features that do not contain exclusively numeric values
-        if df[feature].dtype not in parse.numeric_values:
-            continue
-        describe[feature] = {}
-        describe[feature]["count"] = my_count(df[feature])
-        describe[feature]["mean"] = my_mean(df[feature], count=describe[feature]["count"])
-        describe[feature]["std"] = my_std(df[feature], describe[feature]["mean"], ddof=ddof, count=describe[feature]["count"])
-        describe[feature]["min"] = my_min(df[feature])
-        describe[feature]["25%"] = my_quantile(df[feature], .25, count=describe[feature]["count"])
-        describe[feature]["50%"] = my_quantile(df[feature], .5, count=describe[feature]["count"])
-        describe[feature]["75%"] = my_quantile(df[feature], .75, count=describe[feature]["count"])
-        describe[feature]["max"] = my_max(df[feature])
+		count = get_count(values)
+		mean = get_mean(count, values)
+		description.loc['Count', classe] = count
+		description.loc['Mean', classe] = mean
+		std = get_std(count, mean, values)
+		print("count=",count, ", mean=", mean, "std=", std)
+		description.loc['Std', classe] = std
+		description.loc['Var', classe] = get_var(count, mean, values)
 
-    if print_describe is True:
-        print(tabulate(format_output(describe), headers="keys", tablefmt="fancy_grid", floatfmt=".6f"))
+		data = values.sort_values(ignore_index=True)
 
-    return describe
+		description.loc['Min', classe] = data.loc[0]
+		description.loc['25%', classe] = get_percent(data, 0.25, count)
+		description.loc['50%', classe] = get_percent(data, 0.50, count)
+		description.loc['75%', classe] = get_percent(data, 0.75, count)
+		description.loc['Max', classe] = data.loc[count - 1]
 
-def main():
-    # Read CSV file with pandas
-    df_orig = parse.read_file("datasets/dataset_train.csv")
+def	describe():
+	path = parsing(sys.argv, len(sys.argv))
+	csv = get_csv(path)
+	description = pd.DataFrame(columns=cst.classes)
 
-    # Describe
-    desc = my_describe(df_orig)
+	get_data(description, csv)
+
+	print("My describe:")
+	print(tabulate(description, cst.classesHeaders, tablefmt="fancy_grid", numalign=("right")))
+	print("\nDescribe from pd.describe():")
+	print(tabulate(csv.describe().loc[:,'Arithmancy':], cst.classesHeaders, tablefmt="fancy_grid", numalign=("right")))
 
 if __name__ == "__main__":
-    main()
-
+	describe()
