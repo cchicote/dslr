@@ -6,12 +6,6 @@ from tabulate import tabulate
 import parse
 import constants as cst
 
-def	parsing(av, ac):
-	if ac != 2:
-		print("usage: ./describe.py [dataset]")
-		exit()
-	return av[1]
-
 def	get_count(values):
 	count = 0.0
 	for elem in values:
@@ -54,37 +48,39 @@ def	get_percent(data, percent, count):
 	else:
 		print("Error in my_quantile: counted [%f] elements in values" % (count))
 
-def	get_data(description, df):
-	for feature in df:
-		if feature not in parse.get_features_list(df):
-			continue
-
-		values = df.loc[:, feature]
-
-		count = get_count(values)
-		mean = get_mean(count, values)
-		description.loc['Count', feature] = count
-		description.loc['Mean', feature] = mean
-		std = get_std(count, mean, values)
-		description.loc['Std', feature] = std
-		description.loc['Var', feature] = get_var(std)
-
-		data = values.sort_values(ignore_index=True)
-
-		description.loc['Min', feature] = data.loc[0]
-		description.loc['25%', feature] = get_percent(data, 0.25, count)
-		description.loc['50%', feature] = get_percent(data, 0.50, count)
-		description.loc['75%', feature] = get_percent(data, 0.75, count)
-		description.loc['Max', feature] = data.loc[count - 1]
-
-def	describe():
-	path = parsing(sys.argv, len(sys.argv))
-	df = parse.read_file(path)
-	
+def	get_data(df):
 	feat_list = parse.get_features_list(df)
 	description = pd.DataFrame(columns=feat_list)
 
-	get_data(description, df)
+	for feature in df:
+		if feature not in feat_list:
+			continue
+
+		values = df[feature]
+
+		count = get_count(values)
+		mean = get_mean(count, values)
+		description.loc['count', feature] = count
+		description.loc['mean', feature] = mean
+		std = get_std(count, mean, values)
+		description.loc['std', feature] = std
+		description.loc['var', feature] = get_var(std)
+
+		data = values.sort_values(ignore_index=True)
+
+		description.loc['min', feature] = data.loc[0]
+		description.loc['25%', feature] = get_percent(data, 0.25, count)
+		description.loc['50%', feature] = get_percent(data, 0.50, count)
+		description.loc['75%', feature] = get_percent(data, 0.75, count)
+		description.loc['max', feature] = data.loc[count - 1]
+
+	return description
+
+def	describe():
+	filename = parse.get_filename(sys.argv, len(sys.argv))
+	df = parse.read_file(filename)
+	
+	description = get_data(df)
 
 	print(tabulate(description, cst.classesHeaders, tablefmt="fancy_grid", numalign=("right")))
 

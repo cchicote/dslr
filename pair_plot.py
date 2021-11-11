@@ -7,9 +7,10 @@ import constants as cst
 
 def get_classes(df):
 	classes = []
+	feat_list = parse.get_features_list(df)
 	for feature in df:
 		# Skip the Index column and the features that do not contain exclusively numeric values
-		if feature == "Index" or df[feature].dtype not in cst.numeric_values:
+		if feature not in feat_list:
 			continue
 		classes.append(feature)
 	return classes

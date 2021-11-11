@@ -1,4 +1,5 @@
 import numpy as np
+import sys
 import math
 from tabulate import tabulate
 import parse
@@ -10,12 +11,13 @@ def warn_diff(feature, val_type, standard_val, local_val):
 def test_describe(df, describe, print_describe=True):
     # Values calculated with system/numpy functions go to control_values dict
     # It will allow us to check if our functions return correct values
-    control_values = df.describe()
+    feat_list = parse.get_features_list(df)
+    control_values = df.describe().loc[:, feat_list[0]:]
     errors = 0
     
     for feature in df:
         # Skip the features that do not contain exclusively numeric values
-        if df[feature].dtype not in parse.numeric_values:
+        if feature not in feat_list:
             continue
 
         # For each significative difference between results from our functions and results from system/numpy functions, we output a warning
@@ -25,18 +27,19 @@ def test_describe(df, describe, print_describe=True):
                 warn_diff(feature, value, describe[feature][value], control_values[feature][value])
 
     if print_describe is True:
-        print(tabulate(dc.format_output(describe), headers="keys", tablefmt="fancy_grid", floatfmt=".6f"))
-        print(tabulate(df.describe(), headers="keys", tablefmt="fancy_grid", floatfmt=".6f"))
+        print(tabulate(describe, headers="keys", tablefmt="fancy_grid", floatfmt=".6f"))
+        print(tabulate(control_values, headers="keys", tablefmt="fancy_grid", floatfmt=".6f"))
 
     return errors
 
 
 def main():
     # Read CSV file with pandas
-    df_orig = parse.read_file("datasets/dataset_train.csv")
+    filename = parse.get_filename(sys.argv, len(sys.argv))
+    df = parse.read_file(filename)
 
     # Describe
-    test_describe(df_orig, dc.my_describe(df_orig, print_describe=False))
+    test_describe(df, dc.get_data(df))
 
 if __name__ == "__main__":
     main()

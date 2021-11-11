@@ -4,6 +4,12 @@ import describe
 import math
 import constants as cst
 
+def get_filename(av, ac):
+	if ac != 2:
+		print("usage: ./describe.py [dataset]")
+		exit()
+	return av[1]
+
 def my_min(values):
     m = values[0]
     for value in values:

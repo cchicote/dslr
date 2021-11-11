@@ -13,8 +13,9 @@ def	plot_hist(df):
 	i=0
 	j=0
 	fig, axs = plt.subplots(4, 4)
+	feat_list = parse.get_features_list(df)
 	for feature in df:
-		if feature == "Index" or df[feature].dtype not in cst.numeric_values:
+		if feature not in feat_list:
 			continue
 		for house in cst.houses:
 			axs[i, j].hist(get_feature_per_house(df, house, feature), bins=25, alpha=0.5, color = cst.houses_colors[house])
@@ -30,8 +31,9 @@ def	my_histogram(df):
 	std = []
 	feat_name = []
 	n_feat = 0
+	feat_list = parse.get_features_list(df)
 	for feature in df:
-		if feature == "Index" or df[feature].dtype not in cst.numeric_values:
+		if feature not in feat_list:
 			continue
 		count = describe.get_count(df[feature])
 		std.append(describe.get_std(count, describe.get_mean(count, df[feature]), df[feature]))
