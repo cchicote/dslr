@@ -77,7 +77,7 @@ def	my_histogram(csv):
 	plt.show()
 
 def	histogram():
-	csv = pd.read_csv(sys.argv[1], sep=",")
+	csv = pd.read_csv("datasets/dataset_train.csv", sep=",")
 	data = preprocess(csv)
 	plot_hist(csv, data)
 	my_histogram(csv)
