@@ -76,11 +76,11 @@ def	my_histogram(csv):
 	plt.title("Standard deviation between the student's grades for each feature \n(less std means that the student's grades are homogeneous)")
 	plt.show()
 
-def	histogramme():
+def	histogram():
 	csv = pd.read_csv(sys.argv[1], sep=",")
 	data = preprocess(csv)
 	plot_hist(csv, data)
 	my_histogram(csv)
 
 if __name__ == "__main__":
-	histogramme()
+	histogram()
