@@ -2,6 +2,7 @@ import numpy as np
 import math
 from tabulate import tabulate
 import parse
+import constants as cst
 
 houses_colors = {'Gryffindor': '#7F0909', 'Slytherin': '#0D6217', 'Hufflepuff': '#EEE117', 'Ravenclaw': '#000A90'}
 
@@ -100,7 +101,7 @@ def my_describe(df, print_describe=True):
     
     for feature in df:
         # Skip the features that do not contain exclusively numeric values
-        if df[feature].dtype not in parse.numeric_values:
+        if df[feature].dtype not in cst.numeric_values:
             continue
         describe[feature] = {}
         describe[feature]["count"] = my_count(df[feature])

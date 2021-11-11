@@ -1,4 +1,4 @@
-#!env/bin/python3
+#!dslr_env/bin/python3
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
@@ -9,7 +9,7 @@ def get_classes(df):
 	classes = []
 	for feature in df:
 		# Skip the Index column and the features that do not contain exclusively numeric values
-		if feature == "Index" or df[feature].dtype not in parse.numeric_values:
+		if feature == "Index" or df[feature].dtype not in cst.numeric_values:
 			continue
 		classes.append(feature)
 	return classes

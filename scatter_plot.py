@@ -1,12 +1,13 @@
-#!env/bin/python3
+#!dslr_env/bin/python3
 import plotly.graph_objects as go
 import parse
+import constants as cst
 
 def my_scatter_plot(df):
 	fig = go.Figure()
 	for feature in df:
 		# Skip the Index column and the features that do not contain exclusively numeric values
-		if feature == "Index" or df[feature].dtype not in parse.numeric_values:
+		if feature == "Index" or df[feature].dtype not in cst.numeric_values:
 			continue
 		fig.add_trace(go.Scatter(y=df[feature], name=feature, opacity=0.8, mode='markers'))
 

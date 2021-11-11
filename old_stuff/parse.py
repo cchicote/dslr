@@ -20,14 +20,6 @@ def my_max(values):
                 m = value
     return m
 
-def get_features_list(df):
-	feat_list = []
-	for feature in df:
-		if feature == "Index" or df[feature].dtype not in cst.numeric_values:
-			continue
-		feat_list.append(feature)
-	return feat_list
-
 def normalize_df(df):
     for column in df.columns:
         if df[column].dtype not in cst.numeric_values:
