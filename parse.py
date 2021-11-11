@@ -1,14 +1,31 @@
 import pandas as pd
+import numpy as np
 import describe
 import math
 
 numeric_values = ["float64", "int64"]
 
+def my_min(values):
+    m = values[0]
+    for value in values:
+        if not np.isnan(value):
+            if value < m:
+                m = value
+    return m
+
+def my_max(values):
+    m = values[0]
+    for value in values:
+        if not np.isnan(value):
+            if value > m:
+                m = value
+    return m
+
 def normalize_df(df):
     for column in df.columns:
         if df[column].dtype not in numeric_values:
             continue
-        df[column] = (df[column] - describe.my_min(df[column])) / (describe.my_max(df[column]) - describe.my_min(df[column]))
+        df[column] = (df[column] - my_min(df[column])) / (my_max(df[column]) - my_min(df[column]))
     return df
 
 #def normalize_df(df):

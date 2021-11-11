@@ -79,7 +79,6 @@ def	get_data(description, csv):
 		description.loc['Count', classe] = count
 		description.loc['Mean', classe] = mean
 		std = get_std(count, mean, values)
-		print("count=",count, ", mean=", mean, "std=", std)
 		description.loc['Std', classe] = std
 		description.loc['Var', classe] = get_var(count, mean, values)
 
