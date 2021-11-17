@@ -6,23 +6,28 @@ import numpy as np
 import pandas as pd
 import math
 
-feat_list = ['Astronomy'] #, 'Herbology', 'Ancient Runes'
+feat_list = ['Astronomy', 'Herbology', 'Ancient Runes']
 
 def de_normalize(value, max_value, min_value):
 		return value * (max_value - min_value)
 
 class Rocky():
-	def __init__(self, df, learningRate = 0.01, learningRateGoal = 0.0000001, precision = 15, it_max = 500):
+	def __init__(self, df, learningRate = 0.1, learningRateGoal = 0.0000001, precision = 10, it_max = 1000):
 		self.df = df
-		self.x = df.copy()[feat_list].to_numpy()
-		self.m, self.n = self.x.shape
-		self.y = self.is_from_house()
-		self.theta = np.zeros(shape=(len(cst.houses)))
-		self.cost = 0
+		self.x = df.copy()[feat_list].to_numpy()				# shape = student * features
+		self.m, self.n = self.x.shape							# len student, len features
+		self.y = self.get_binary_house()						# shape = student * houses
+		self.theta = np.zeros(shape=(self.n, len(cst.houses)))	# shape = features * houses
+		self.thetas_hist = [self.theta.copy()]
+		self.cost = self.n
+		self.cost_hist = [self.n]
+		self.it = 0
 		self.it_max = it_max
 		self.lr = learningRate
+		self.lrGoal = learningRateGoal
+		self.min_cost_diff = 10 ** -precision
 
-	def is_from_house(self):
+	def get_binary_house(self):
 		y = np.zeros([self.m, len(cst.houses)])
 		house = self.df.copy()["Hogwarts House"].to_numpy()
 		for i in range(self.m):
@@ -33,49 +38,85 @@ class Rocky():
 	def sigmoid(self, z):
 		return 1.0 / (1 + np.exp(-z))
 
-	def	get_cost(self, pred):
+	def	get_cost(self):
 		# print("============= COST ===============")
-		# print("dim y: ", self.y.shape)
-		# print("dim log(pred): ", np.log(pred).shape)
-		# print("dim (1 - y): ", (1 - self.y).shape)
-		# print("dim log(1 - pred): ", np.log(1 - pred).shape)
 
+		pred = self.sigmoid(np.dot(self.x, self.theta))
 		self.cost = -(1 / self.m) * np.sum(self.y * np.log(pred) + (1 - self.y) * np.log(1 - pred))
 
-	def update_theta(self, pred, house):
-		# print("============= UPDATE THETA ===============")
-		# print("dim pred: ", pred.shape)
-		# print("dim y[:,house]: ", self.y[:,house].shape)
-		# print("dim x: ", self.x.shape)
-		
-		dt = (1 / self.m) * np.sum((pred - self.y[:,house]) * self.x.T)
+		tmp = self.cost
+		self.cost_hist.append(tmp)
+		# print("cost: ", self.cost)
 
-		self.theta[house] -= self.lr * dt
+	def update_theta(self, pred, house, feat):
+		# print("============= UPDATE THETA ===============")
+		
+		dt = (1 / self.m) * np.sum((pred - self.y[:,house]) * self.x[:,feat])
+
+		self.theta[feat, house] -= self.lr * dt
+		
+		self.thetas_hist.append(self.theta.copy())
 
 	def	accuracy(self):
+		output = self.predict()
 		print("============= ACCURACY ===============")
+		accuracy = 0
+		l = 0
+		for col in range(len(cst.houses)):
+			for row in range(self.m):
+				if self.y[row, col] == 1 and output[row] == col:
+					accuracy += 1
+				l+= 1
+
+		accuracy = accuracy * 100 / self.m
+		print(accuracy)
 
 	def	predict(self):
 		print("============= PREDICT ===============")
 		output = []
 		for house in range(len(cst.houses)):
-			res = np.around(self.sigmoid(np.dot(self.theta[house], self.x.T)))
+			res = self.sigmoid(np.dot(self.theta[:, house], self.x.T))
 			output.append(res)
-		print(output)
+
+		output = np.array(output)
+		max = np.amax(output, axis=0)
+		ret = []
+		for i in range(self.m):
+			bruh = np.where(output[:,i] == max[i])
+			ret.append(bruh[0][0])
+
+		return ret
 	
 	def gradient(self):
 		for i in range(self.it_max):
+			self.it += 1
+			self.get_cost()
 			for house in range(len(cst.houses)):
-				pred = self.sigmoid(np.dot(self.theta[house], self.x.T))
-				# self.get_cost(pred)
-				self.update_theta(pred, house)
-
-		self.predict()
+				pred = self.sigmoid(np.dot(self.x, self.theta[:, house].T))
+				for feat in range(self.n):
+					self.update_theta(pred, house, feat)
+				if self.it > 10 and abs(self.cost - self.cost_hist[-2]) < self.min_cost_diff:
+					print("BREAK COST")
+					break
+				if self.lr <= self.lrGoal:
+					print("BREAK LR")
+					break
+				if self.cost > self.cost_hist[-2]:
+					self.cost = self.cost_hist[-2]
+					self.theta = self.thetas_hist[-2]
+					self.lr /= 10
+					print("new lr= ", self.lr)
+			else:
+				continue
+			break
+		print("============= THETA ===============  it= ", self.it)
+		print(self.theta)
+		self.accuracy()
 
 def main():
 	filename = parse.get_filename(sys.argv, len(sys.argv))
 	df = parse.normalize_df(parse.read_file(filename))
-	df1 = df.copy()[['Hogwarts House', 'Astronomy']] #, 'Herbology'#, 'Ancient Runes'
+	df1 = df.copy()[['Hogwarts House', 'Astronomy', 'Herbology', 'Ancient Runes']]
 	df1.dropna(inplace=True)
 	# print(df['Hogwarts House'])
 	rocky = Rocky(df1)
