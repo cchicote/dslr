@@ -4,9 +4,10 @@ import parse
 import constants as cst
 import numpy as np
 import pandas as pd
+import pickle as pkl
 import math
 
-feat_list = ['Astronomy', 'Herbology', 'Ancient Runes']
+feat_list = ['Astronomy', 'Herbology', 'Ancient Runes', 'Defense Against the Dark Arts', 'Divination', 'Transfiguration']
 
 def de_normalize(value, max_value, min_value):
 		return value * (max_value - min_value)
@@ -19,6 +20,7 @@ class Rocky():
 		self.y = self.get_binary_house()						# shape = student * houses
 		self.theta = np.zeros(shape=(self.n, len(cst.houses)))	# shape = features * houses
 		self.thetas_hist = [self.theta.copy()]
+		self.bias = 0.0
 		self.cost = self.n
 		self.cost_hist = [self.n]
 		self.it = 0
@@ -26,6 +28,17 @@ class Rocky():
 		self.lr = learningRate
 		self.lrGoal = learningRateGoal
 		self.min_cost_diff = 10 ** -precision
+
+	def save_thetas(self, filename):
+		with open(filename, 'wb') as fobj:
+			pkl.dump(self.theta, fobj)
+	
+	def retrieve_thetas(self, filename):
+		try:
+			with open(filename, 'rb') as fobj:
+				self.theta = pkl.load(fobj)
+		except IOError as e:
+			print("Retrieve theta issue: %s" % (e))
 
 	def get_binary_house(self):
 		y = np.zeros([self.m, len(cst.houses)])
@@ -39,60 +52,32 @@ class Rocky():
 		return 1.0 / (1 + np.exp(-z))
 
 	def	get_cost(self):
-		# print("============= COST ===============")
+		# print("============= COST =============")
+		pred = self.sigmoid(np.dot(self.x, self.theta) + self.bias)
 
-		pred = self.sigmoid(np.dot(self.x, self.theta))
 		self.cost = -(1 / self.m) * np.sum(self.y * np.log(pred) + (1 - self.y) * np.log(1 - pred))
 
 		tmp = self.cost
 		self.cost_hist.append(tmp)
-		# print("cost: ", self.cost)
+		#print("cost: ", self.cost)
 
 	def update_theta(self, pred, house, feat):
-		# print("============= UPDATE THETA ===============")
+		# print("============= UPDATE THETA =============")
 		
 		dt = (1 / self.m) * np.sum((pred - self.y[:,house]) * self.x[:,feat])
+		db = (1 / self.m) * np.sum((pred - self.y[:,house]))
 
 		self.theta[feat, house] -= self.lr * dt
-		
+		self.bias -= self.lr * db
+
 		self.thetas_hist.append(self.theta.copy())
 
-	def	accuracy(self):
-		output = self.predict()
-		print("============= ACCURACY ===============")
-		accuracy = 0
-		l = 0
-		for col in range(len(cst.houses)):
-			for row in range(self.m):
-				if self.y[row, col] == 1 and output[row] == col:
-					accuracy += 1
-				l+= 1
-
-		accuracy = accuracy * 100 / self.m
-		print(accuracy)
-
-	def	predict(self):
-		print("============= PREDICT ===============")
-		output = []
-		for house in range(len(cst.houses)):
-			res = self.sigmoid(np.dot(self.theta[:, house], self.x.T))
-			output.append(res)
-
-		output = np.array(output)
-		max = np.amax(output, axis=0)
-		ret = []
-		for i in range(self.m):
-			bruh = np.where(output[:,i] == max[i])
-			ret.append(bruh[0][0])
-
-		return ret
-	
 	def gradient(self):
 		for i in range(self.it_max):
 			self.it += 1
 			self.get_cost()
 			for house in range(len(cst.houses)):
-				pred = self.sigmoid(np.dot(self.x, self.theta[:, house].T))
+				pred = self.sigmoid(np.dot(self.x, self.theta[:, house].T) + self.bias)
 				for feat in range(self.n):
 					self.update_theta(pred, house, feat)
 				if self.it > 10 and abs(self.cost - self.cost_hist[-2]) < self.min_cost_diff:
@@ -109,19 +94,21 @@ class Rocky():
 			else:
 				continue
 			break
-		print("============= THETA ===============  it= ", self.it)
+		print("============= THETA =============  it= ", self.it)
 		print(self.theta)
+		print("============= BIAS =============")
+		print(self.bias)
 		self.accuracy()
 
 def main():
 	filename = parse.get_filename(sys.argv, len(sys.argv))
 	df = parse.normalize_df(parse.read_file(filename))
-	df1 = df.copy()[['Hogwarts House', 'Astronomy', 'Herbology', 'Ancient Runes']]
+	df1 = df.copy()[['Hogwarts House'] + feat_list]
 	df1.dropna(inplace=True)
 	# print(df['Hogwarts House'])
 	rocky = Rocky(df1)
 	rocky.gradient()
-
+	rocky.save_thetas("weights.pkl")
 
 if __name__ == "__main__":
 	main()
