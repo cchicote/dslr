@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import pickle as pkl
 import math
+import logreg_predict as lp
 
 feat_list = ['Astronomy', 'Herbology', 'Ancient Runes', 'Defense Against the Dark Arts', 'Divination', 'Transfiguration']
 
@@ -99,6 +100,7 @@ class Rocky():
 		print("============= BIAS =============")
 		print(self.bias)
 		#self.accuracy()
+		lp.accuracy(self)
 
 def main():
 	filename = parse.get_filename(sys.argv, len(sys.argv))
