@@ -25,13 +25,16 @@ class Rocky():
 		self.learningRate = learningRate
 		self.learningRateGoal = learningRateGoal
 		self.min_cost_diff = 10 ** -precision
+		#self.min_x = []
+		#self.max_x = []
 
 	def is_from_house(self, house):
 		return np.where(self.df['Hogwarts House'] == house, 1, 0)
 
 	# only for predict
 	def sigmoid(self, theta, x):
-		# print("dim t.T * x: ", np.dot(x, theta).shape)
+		# print("dim t.T * x: ", np.dot(x, theta.T).shape)
+		# print("dim bias: ", self.bias.shape)
 		z = np.dot(x, theta) + self.bias
 		return 1.0 / (1 + np.exp(-z))
 
@@ -41,32 +44,58 @@ class Rocky():
 
 	# get the cost with the lastest thethas
 	def get_new_cost(self, pred):
-		self.cost = (-1 / self.m) * np.sum(np.dot(self.y, np.log(pred)) + np.dot((1 - self.y), np.log(1 - pred)))
+		# print("============= COST ===============")
+		# print("y: ", self.y.shape)
+		# print("pred: ", pred.shape)
+		# print("First: ", -(1 / self.m))
+		# print("Second ", np.sum(np.dot(self.y, np.log(pred))))
+		# print("Third: ", np.dot((1 - self.y), np.log(1 - pred)))
+		# print("Fourth: ", np.sum(np.dot(self.y, np.log(pred)) + np.dot((1 - self.y), np.log(1 - pred))))
+		self.cost = np.dot((-1 / self.m), np.sum(np.dot(self.y, np.log(pred)) + np.dot((1 - self.y), np.log(1 - pred))))
+		# print("Cost: ", self.cost)
 
 	# fct for get thetas and the derivate
 	def update_theta(self, pred):
+		# print("============= UPDATE THETA ===============")
+		# print("1/m: ", (1 / self.m))
+		# print("dim x.T: ", self.x.T.shape)
+		# print("dim pred: ", pred.shape)
+		# print("dim y.T: ", self.y.T.shape)
+		# print("dot prod: ", np.dot(self.x.T, (pred - self.y.T)))
+		# print("dim dt: ", self.dt.shape)
+		#self.dt = (1 / self.m) * np.dot(self.x.T, np.sum((pred - self.y.T)))
 		self.dt = (1 / self.m) * np.sum(np.dot(self.x.T, (pred - self.y)))
 		dt_bias = (1 / self.m) * np.sum((pred - self.y))
 
+		# print("theta: ", self.theta.shape)
+		# print("dt: ", self.dt.shape)
 		self.theta -= self.learningRate * self.dt
 		self.bias -= self.learningRate * dt_bias
+		# print("theta: ", self.theta)
+
+	
 
 	# loop of training
 	def gradient(self):
-		#for house in cst.houses:
-		house = "Gryffindor"
-		for i in range(1):
+		for house in cst.houses:
+			# print("----- " + house + " -----")
 			self.y = np.array([self.is_from_house(house)])
 			self.theta = np.array(self.n * [np.zeros(1)])
 			self.dt = self.theta.copy()
 			self.bias = 0
 			self.cost = np.array(self.n * [np.zeros(1)])
-			for i in range(500):
+			# print(self.y)
+			for i in range(50):
+			#while self.learningRate > self.learningRateGoal:
 				self.pred = self.sigmoid(self.theta, self.x)
 				self.get_new_cost(self.pred)
 				self.update_theta(self.pred)
+				#break
 
 			self.final_theta[house] = self.theta
+		# for key in self.final_theta.keys():
+		# 	print(key)
+		# 	print(self.final_theta[key])
 		self.predict()
 
 	def predict(self):
@@ -75,22 +104,19 @@ class Rocky():
 			bla.append(l[0])
 		print(bla)
 		result = {}
-		# for house in self.final_theta.keys():
-		house = "Gryffindor"
-		for i in range(1):
+		for house in self.final_theta.keys():
 			print("----- " + house + " -----")
-			res = self.sigmoid(self.theta, self.x)
+			print(self.final_theta[house])
+			res = self.sigmoid(self.final_theta[house], self.x)
+			#print(res)
+			#result = np.where(res >= 0.5, 1, 0)
 			result[house] = []
 			for r in res:
 				if r >= 0.5:
 					result[house].append(1)
 				else:
 					result[house].append(0)
-			print(self.y[0,:20])
-			print("========================")
-			p = result[house]
-			print(p[:20])
-			print(self.theta)
+			print(result[house][:20])
 		
 def main():
 	filename = parse.get_filename(sys.argv, len(sys.argv))
