@@ -33,7 +33,7 @@ class Rocky():
 		with open(filename, 'wb') as fobj:
 			pkl.dump(self.theta, fobj)
 	
-	def retrieve_thetas(self, filename):
+	def load_thetas(self, filename):
 		try:
 			with open(filename, 'rb') as fobj:
 				self.theta = pkl.load(fobj)
@@ -98,7 +98,7 @@ class Rocky():
 		print(self.theta)
 		print("============= BIAS =============")
 		print(self.bias)
-		self.accuracy()
+		#self.accuracy()
 
 def main():
 	filename = parse.get_filename(sys.argv, len(sys.argv))

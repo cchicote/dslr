@@ -44,7 +44,7 @@ def main():
 	df1 = df.copy()[['Hogwarts House'] + feat_list]
 	df1.dropna(inplace=True)
 	rocky = Rocky(df1)
-	rocky.retrieve_thetas("weights.pkl")
+	rocky.load_thetas("weights.pkl")
 	accuracy(rocky)
 
 if __name__ == "__main__":
