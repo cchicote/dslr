@@ -1,51 +1,41 @@
 #!dslr_env/bin/python3
-
-import sys
-from logreg_train import Rocky
+import parse
+import logreg_train as lt
+import pickle as pkl
+import pandas as pd
 import constants as cst
 import numpy as np
-import parse
 
 feat_list = ['Astronomy', 'Herbology', 'Ancient Runes', 'Defense Against the Dark Arts', 'Divination', 'Transfiguration']
 
-def	predict(rocky):
-	print("=============PREDICT=============")
-	output = []
-	for house in range(len(cst.houses)):
-		res = rocky.sigmoid(np.dot(rocky.theta[:, house], rocky.x.T) + rocky.bias)
-		output.append(res)
+def load_thetas(filename):
+	try:
+		with open(filename, 'rb') as fobj:
+			theta = pkl.load(fobj)
+		return theta
+	except IOError as e:
+		print("Retrieve theta issue: %s" % (e))
 
-	output = np.array(output)
-	max = np.amax(output, axis=0)
-	ret = []
-	for i in range(rocky.m):
-		bruh = np.where(output[:,i] == max[i])
-		ret.append(bruh[0][0])
+def	print_in_file(y_pred):
+	for i in range(len(y_pred)):
+		y_pred[i] = cst.houses[y_pred[i]]
+	
+	y_pred_out = pd.DataFrame(y_pred)
+	y_pred_out.columns = ["Hogwarts House"]
+	y_pred_out.to_csv("houses.csv", index_label="Index")
 
-	return ret
-
-def	accuracy(rocky):
-	output = predict(rocky)
-	print("=============ACCURACY=============")
-	accuracy = 0
-	l = 0
-	for col in range(len(cst.houses)):
-		for row in range(rocky.m):
-			if rocky.y[row, col] == 1 and output[row] == col:
-				accuracy += 1
-			l+= 1
-
-	accuracy = accuracy * 100 / rocky.m
-	print(accuracy)
-
+# Lire fichier dataset_test.csv
+# Output dans houses.csv au format Index,Hogwarts House
 def main():
-	filename = parse.get_filename(sys.argv, len(sys.argv))
-	df = parse.normalize_df(parse.read_file(filename))
-	df1 = df.copy()[['Hogwarts House'] + feat_list]
-	df1.dropna(inplace=True)
-	rocky = Rocky(df1)
-	rocky.load_thetas("weights.pkl")
-	accuracy(rocky)
+	args = parse.get_args_predict()
+	if args == -1:
+		return
+	df = parse.normalize_df(parse.read_file(args.fname_dataset))
+	df1 = df.copy()[feat_list]
+	df1 = df1.replace(np.nan, 0.5)
+	theta = load_thetas(args.fname_weights)
+	y_pred = lt.predict(theta, df1, df1.shape[0])
+	print_in_file(y_pred)
 
 if __name__ == "__main__":
 	main()
