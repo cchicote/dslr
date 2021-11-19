@@ -3,12 +3,39 @@ import numpy as np
 import describe
 import math
 import constants as cst
+import argparse
+from pathlib import Path
 
 def get_filename(av, ac):
 	if ac != 2:
 		print("usage: ./describe.py [dataset]")
 		exit()
 	return av[1]
+
+def check_path(args, parser):
+    if Path(args.fname_dataset).suffix != '.csv':
+        parser.print_help()
+        return -1
+    if Path(args.fname_weights).suffix != '.pkl':
+        parser.print_help()
+        return -1
+    return args
+
+def get_args_train():
+    parser = argparse.ArgumentParser(description="Wonderful DSLR trainer.")
+    parser.add_argument('-f', type=str, action="store", dest='fname_dataset', required=True, help='Format: <filename.csv>. Path to the dataset file')
+    parser.add_argument('-w', type=str, action="store", dest='fname_weights', required=True, help='Format: <filename.pkl>. Path to the output file containing the weights from the training')
+    parser.add_argument('-a', action="store_true", dest='accuracy', default=False, help='calculates accuracy (default: False)')
+    args = parser.parse_args()
+    return check_path(args, parser)
+
+def get_args_predict():
+    parser = argparse.ArgumentParser(description="Wonderful DSLR predictor.")
+    parser.add_argument('-f', type=str, action="store", dest='fname_dataset', required=True, help='Format: <filename.csv>. Path to the dataset file')
+    parser.add_argument('-w', type=str, action="store", dest='fname_weights', required=True, help='Format: <filename.pkl>. Path to the input file containing the weights from previous training')
+    parser.add_argument('-a', action="store_true", dest='accuracy', default=False, help='calculates accuracy (default: False)')
+    args = parser.parse_args()
+    return check_path(args, parser)
 
 def my_min(values):
     m = values[0]
