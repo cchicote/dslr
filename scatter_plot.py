@@ -1,7 +1,6 @@
 #!dslr_env/bin/python3
 import plotly.graph_objects as go
 import parse
-import constants as cst
 
 def my_scatter_plot(df):
 	fig = go.Figure()
@@ -17,13 +16,13 @@ def my_scatter_plot(df):
 
 def main():
 	# Read CSV file with pandas
-	df_orig = parse.read_file("datasets/dataset_train.csv")
-
-	# Normalize the values of the dataframe
-	df = parse.normalize_df(df_orig.copy())
+	args = parse.get_args_ds()
+	if args == -1:
+		return
+	df = parse.read_file(args.fname_dataset)
 
 	# Plot the normalized data for each feature
-	my_scatter_plot(df)
+	my_scatter_plot(parse.normalize_df(df.copy()))
 
 if __name__ == "__main__":
 	main()
