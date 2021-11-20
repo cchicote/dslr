@@ -5,9 +5,9 @@ import pickle as pkl
 import constants as cst
 
 class Rocky():
-	def __init__(self, df, learningRate = 0.9, it_max = 1000, tp = 100):
+	def __init__(self, df, learningRate = 0.2, it_max = 1000, tp = 100):
 		self.df = df
-		self.X = df.copy()[cst.feat_list].to_numpy()				# shape = student * features
+		self.X = df.copy()[cst.feat_list].to_numpy()			# shape = student * features
 		self.m, self.n = self.X.shape							# len student, len features
 		self.y = self.get_binary_house()						# shape = student * houses
 		self.theta = np.zeros(shape=(self.n, len(cst.houses)))	# shape = features * houses
