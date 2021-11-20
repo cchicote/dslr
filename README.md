@@ -4,8 +4,13 @@ Codez un classifieur et sauvez Poudlard !
 
 ## Usage:
 ```
-./train.py   [-h] [-v] [-ngd]
-./predict.py [-h] [-r] [-cmp]
+./describe.py		-f [dataset]
+./histogram.py		-f [dataset]
+./scatter_plot.py	-f [dataset]
+./pair_plot.py		-f [dataset]
+
+./logreg_train.py	-f [dataset] -w [weigts file] [-a]
+./logreg_predict.py	-f [dataset] -w [weigts file]
 ```
 
 ## Dependencie:

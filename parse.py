@@ -62,7 +62,6 @@ def get_args_predict():
     parser = argparse.ArgumentParser(description="Wonderful DSLR predictor.")
     parser.add_argument('-f', type=str, action="store", dest='fname_dataset', required=True, help='Format: <filename.csv>. Path to the dataset file (the file must exist and be valid)')
     parser.add_argument('-w', type=str, action="store", dest='fname_weights', required=True, help='Format: <filename.pkl>. Path to the input file containing the weights from previous training (the file must exist and be valid)')
-    parser.add_argument('-a', action="store_true", dest='accuracy', default=False, help='calculates accuracy (default: False)')
     args = parser.parse_args()
     if check_valid_file(args.fname_dataset, parser, '.csv', True) == -1 or check_valid_file(args.fname_weights, parser, '.pkl', True) == -1:
         return -1
