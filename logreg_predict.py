@@ -9,7 +9,14 @@ import numpy as np
 def load_thetas(filename):
 	try:
 		with open(filename, 'rb') as fobj:
-			theta = pkl.load(fobj)
+			try:
+				theta = pkl.load(fobj)
+			except EOFError:
+				print("Empty .pkl file, exiting program.")
+				exit(1)
+			except pkl.UnpicklingError:
+				print("Invalid .pkl file, exiting program")
+				exit(1)
 		return theta
 	except IOError as e:
 		print("Retrieve theta issue: %s" % (e))
