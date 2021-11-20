@@ -27,8 +27,8 @@ def	print_in_file(y_pred):
 def main():
 	args = parse.get_args_predict()
 	if args == -1:
-		return
-	df = parse.normalize_df(parse.read_file(args.fname_dataset))
+		exit (1)
+	df = parse.normalize_df(parse.read_file(args.fname_dataset, check_hog=False))
 	df1 = df.copy()[cst.feat_list]
 	df1 = df1.replace(np.nan, 0.5)
 	theta = load_thetas(args.fname_weights)
