@@ -6,8 +6,6 @@ import pandas as pd
 import constants as cst
 import numpy as np
 
-feat_list = ['Astronomy', 'Herbology', 'Ancient Runes', 'Defense Against the Dark Arts', 'Divination', 'Transfiguration']
-
 def load_thetas(filename):
 	try:
 		with open(filename, 'rb') as fobj:
@@ -31,7 +29,7 @@ def main():
 	if args == -1:
 		return
 	df = parse.normalize_df(parse.read_file(args.fname_dataset))
-	df1 = df.copy()[feat_list]
+	df1 = df.copy()[cst.feat_list]
 	df1 = df1.replace(np.nan, 0.5)
 	theta = load_thetas(args.fname_weights)
 	y_pred = lt.predict(theta, df1, df1.shape[0])

@@ -4,12 +4,10 @@ import numpy as np
 import pickle as pkl
 import constants as cst
 
-feat_list = ['Astronomy', 'Herbology', 'Ancient Runes', 'Defense Against the Dark Arts', 'Divination', 'Transfiguration']
-
 class Rocky():
 	def __init__(self, df, learningRate = 0.1, learningRateGoal = 0.0000001, precision = 10, it_max = 1000, tp = 100):
 		self.df = df
-		self.X = df.copy()[feat_list].to_numpy()				# shape = student * features
+		self.X = df.copy()[cst.feat_list].to_numpy()				# shape = student * features
 		self.m, self.n = self.X.shape							# len student, len features
 		self.y = self.get_binary_house()						# shape = student * houses
 		self.theta = np.zeros(shape=(self.n, len(cst.houses)))	# shape = features * houses
@@ -88,7 +86,7 @@ def main():
 	if args == -1:
 		return
 	df = parse.normalize_df(parse.read_file(args.fname_dataset))
-	df1 = df.copy()[['Hogwarts House'] + feat_list]
+	df1 = df.copy()[['Hogwarts House'] + cst.feat_list]
 	df1 = df1.replace(np.nan, 0.5)
 	rocky = Rocky(df1, tp=(59 if args.accuracy else 100))
 	rocky.y = rocky.get_binary_house()
