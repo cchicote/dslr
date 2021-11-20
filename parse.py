@@ -5,10 +5,9 @@ import constants as cst
 import argparse
 from pathlib import Path
 
-def check_data_integrity(df, check_hog=True):
+def check_data_integrity(df, check_hog=True, max_nan_p = 0.75):
     required_col = ["Index", "Hogwarts House"]
     required_col.extend(cst.feat_list)
-    max_nan_p = 0.75
     # Check if dataset is empty
     if df.empty:
         print("ERROR: Empty dataset")

@@ -5,7 +5,7 @@ import pickle as pkl
 import constants as cst
 
 class Rocky():
-	def __init__(self, df, learningRate = 0.9, learningRateGoal = 0.0000001, precision = 10, it_max = 1000, tp = 100):
+	def __init__(self, df, learningRate = 0.9, it_max = 1000, tp = 100):
 		self.df = df
 		self.X = df.copy()[cst.feat_list].to_numpy()				# shape = student * features
 		self.m, self.n = self.X.shape							# len student, len features
@@ -21,8 +21,6 @@ class Rocky():
 		self.it = 0
 		self.it_max = it_max
 		self.lr = learningRate
-		self.lrGoal = learningRateGoal
-		self.min_cost_diff = 10 ** -precision
 
 	def get_binary_house(self):
 		y = np.zeros([self.m, len(cst.houses)])
