@@ -9,8 +9,8 @@ Codez un classifieur et sauvez Poudlard !
 ./scatter_plot.py	-f [dataset]
 ./pair_plot.py		-f [dataset]
 
-./logreg_train.py	-f [dataset] -w [weigts file] [-a]
-./logreg_predict.py	-f [dataset] -w [weigts file]
+./logreg_train.py	-f [dataset] -w [weights file] [-a]
+./logreg_predict.py	-f [dataset] -w [weights file]
 ```
 
 ## Dependencie:
