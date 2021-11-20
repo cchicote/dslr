@@ -1,7 +1,5 @@
 #!dslr_env/bin/python3
 import numpy as np
-import sys
-import math
 from tabulate import tabulate
 import parse
 import describe as dc
@@ -33,11 +31,11 @@ def test_describe(df, describe, print_describe=True):
 
     return errors
 
-
 def main():
-    # Read CSV file with pandas
-    filename = parse.get_filename(sys.argv, len(sys.argv))
-    df = parse.read_file(filename)
+    args = parse.get_args_ds()
+    if args == -1:
+        return
+    df = parse.read_file(args.fname_dataset)
 
     # Describe
     test_describe(df, dc.get_data(df))
