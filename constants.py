@@ -12,3 +12,4 @@ colors=['b', 'c', 'm', 'r', 'y', 'k', 'grey', 'g', 'orange', 'pink', '#7F0909', 
 
 numeric_values = ["float64", "int64"]
 
+feat_list = ['Astronomy', 'Herbology', 'Ancient Runes', 'Defense Against the Dark Arts', 'Divination', 'Transfiguration']
