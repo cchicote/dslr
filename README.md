@@ -1,6 +1,6 @@
 # DSLR
 ### Harry Potter et le datascientist
-Résumé: Codez un classifieur et sauvez Poudlard !
+Codez un classifieur et sauvez Poudlard !
 
 ## Usage:
 ```
