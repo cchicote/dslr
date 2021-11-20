@@ -1,5 +1,4 @@
 #!dslr_env/bin/python3
-import pandas as pd
 import matplotlib.pyplot as plt
 import describe as describe
 import constants as cst
@@ -46,7 +45,10 @@ def	my_histogram(df):
 	plt.show()
 
 def	histogram():
-	df = parse.read_file("datasets/dataset_train.csv")
+	args = parse.get_args_ds()
+	if args == -1:
+		return
+	df = parse.read_file(args.fname_dataset)
 	plot_hist(parse.normalize_df(df))
 	my_histogram(parse.normalize_df(df))
 

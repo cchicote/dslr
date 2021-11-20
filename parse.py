@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
-import describe
-import math
+import os
 import constants as cst
 import argparse
 from pathlib import Path
@@ -12,30 +11,47 @@ def get_filename(av, ac):
 		exit()
 	return av[1]
 
-def check_path(args, parser):
-    if Path(args.fname_dataset).suffix != '.csv':
+def check_valid_file(fname, parser, suffix, check_path):
+    # If file extension is not valid: print help and return error
+    if Path(fname).suffix != suffix:
+        print("ERROR: Invalid suffix")
         parser.print_help()
         return -1
-    if Path(args.fname_weights).suffix != '.pkl':
+    # If the check_path is true and that the fname path does not exist: print help and return error
+    if check_path and not os.path.exists(fname):
+        print("ERROR: Invalid path")
         parser.print_help()
+        return -1
+    # NOW CHECK FILE VALIDITY BY CHECKING IF HOUSES IS FULL
+    return 0
+    
+def get_args_ds():
+    parser = argparse.ArgumentParser(description="Wonderful DSLR data science.")
+    parser.add_argument('-f', type=str, action="store", dest='fname_dataset', required=True, help='Format: <filename.csv>. Path to the dataset file (the file must exist and be valid)')
+    args = parser.parse_args()
+    if check_valid_file(args.fname_dataset, parser, '.csv', True):
         return -1
     return args
 
 def get_args_train():
     parser = argparse.ArgumentParser(description="Wonderful DSLR trainer.")
-    parser.add_argument('-f', type=str, action="store", dest='fname_dataset', required=True, help='Format: <filename.csv>. Path to the dataset file')
-    parser.add_argument('-w', type=str, action="store", dest='fname_weights', required=True, help='Format: <filename.pkl>. Path to the output file containing the weights from the training')
+    parser.add_argument('-f', type=str, action="store", dest='fname_dataset', required=True, help='Format: <filename.csv>. Path to the dataset file (the file must exist and be valid)')
+    parser.add_argument('-w', type=str, action="store", dest='fname_weights', required=True, help='Format: <filename.pkl>. Path to the output file containing the weights from the training (the file will be erased)')
     parser.add_argument('-a', action="store_true", dest='accuracy', default=False, help='calculates accuracy (default: False)')
     args = parser.parse_args()
-    return check_path(args, parser)
+    if check_valid_file(args.fname_dataset, parser, '.csv', True) == -1 or check_valid_file(args.fname_weights, parser, '.pkl', False) == -1:
+        return -1
+    return args
 
 def get_args_predict():
     parser = argparse.ArgumentParser(description="Wonderful DSLR predictor.")
-    parser.add_argument('-f', type=str, action="store", dest='fname_dataset', required=True, help='Format: <filename.csv>. Path to the dataset file')
-    parser.add_argument('-w', type=str, action="store", dest='fname_weights', required=True, help='Format: <filename.pkl>. Path to the input file containing the weights from previous training')
+    parser.add_argument('-f', type=str, action="store", dest='fname_dataset', required=True, help='Format: <filename.csv>. Path to the dataset file (the file must exist and be valid)')
+    parser.add_argument('-w', type=str, action="store", dest='fname_weights', required=True, help='Format: <filename.pkl>. Path to the input file containing the weights from previous training (the file must exist and be valid)')
     parser.add_argument('-a', action="store_true", dest='accuracy', default=False, help='calculates accuracy (default: False)')
     args = parser.parse_args()
-    return check_path(args, parser)
+    if check_valid_file(args.fname_dataset, parser, '.csv', True) == -1 or check_valid_file(args.fname_weights, parser, '.pkl', True) == -1:
+        return -1
+    return args
 
 def my_min(values):
     m = values[0]

@@ -1,5 +1,4 @@
 #!dslr_env/bin/python3
-import sys
 import math
 import pandas as pd
 from tabulate import tabulate
@@ -77,11 +76,11 @@ def	get_data(df):
 	return description
 
 def	describe():
-	filename = parse.get_filename(sys.argv, len(sys.argv))
-	df = parse.read_file(filename)
-	
+	args = parse.get_args_ds()
+	if args == -1:
+		return
+	df = parse.read_file(args.fname_dataset)
 	description = get_data(df)
-
 	print(tabulate(description, cst.classesHeaders, tablefmt="fancy_grid", numalign=("right")))
 
 if __name__ == "__main__":

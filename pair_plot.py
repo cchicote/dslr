@@ -21,13 +21,16 @@ def my_pair_plot(df, classes):
 
 def main():
 	# Read CSV file with pandas
-	df_orig = parse.read_file("datasets/dataset_train.csv")
+	args = parse.get_args_ds()
+	if args == -1:
+		return
+	df = parse.read_file(args.fname_dataset)
 
 	# Normalize a copy of the dataframe
-	df = parse.normalize_df(df_orig.copy())
+	df_norm = parse.normalize_df(df.copy())
 
 	# Pair plot the normalized grades for each class and each house
-	my_pair_plot(df, get_classes(df))
+	my_pair_plot(df_norm, get_classes(df_norm))
 
 if __name__ == "__main__":
 	main()
